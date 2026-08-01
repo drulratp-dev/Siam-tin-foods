@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<base target="_top">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Taviraj:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&family=Chakra+Petch:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F4F6F2; --surface:#FFFFFF; --ink:#1E2A25; --ink-soft:#4B5A52; --muted:#8A968E;
+    --line:#E1E6DE; --green:#2F6F4E; --green-deep:#1F4E37; --green-pale:#E4EEE7;
+    --ochre:#C98A3D; --ochre-soft:#F3E2C6; --danger:#B5533C;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:'Sarabun',sans-serif; -webkit-font-smoothing:antialiased;}
+  h1,h2,h3,.display{font-family:'Taviraj',serif;}
+  .num{font-family:'Chakra Petch',monospace;}
+
+  header.top{padding:40px 24px 20px; max-width:1180px; margin:0 auto;}
+  .eyebrow{text-transform:uppercase; letter-spacing:.14em; font-size:12px; color:var(--green); font-weight:600; font-family:'Chakra Petch',monospace;}
+  h1.display{font-size:clamp(26px,4.4vw,40px); font-weight:600; margin:10px 0 8px; color:var(--green-deep); line-height:1.15;}
+  .sub{color:var(--ink-soft); font-size:15px; max-width:600px; line-height:1.6;}
+  .sync-pill{
+    display:inline-flex; align-items:center; gap:6px; font-family:'Chakra Petch',monospace; font-size:11px;
+    color:var(--green-deep); background:var(--green-pale); padding:4px 10px; border-radius:999px; margin-top:10px;
+  }
+  .sync-dot{width:6px; height:6px; border-radius:50%; background:var(--green);}
+
+  .kpi-wrap{max-width:1180px; margin:16px auto 0; padding:0 24px; display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+  .kpi{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px;}
+  .kpi .label{font-size:12px; color:var(--muted); font-family:'Chakra Petch',monospace; letter-spacing:.03em;}
+  .kpi .value{font-size:26px; font-weight:700; color:var(--green-deep); margin-top:4px;}
+  .kpi .value span.unit{font-size:13px; font-weight:600; color:var(--ink-soft); margin-left:4px;}
+
+  .chart-wrap{max-width:1180px; margin:20px auto 0; padding:0 24px;}
+  .chart{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 16px 10px;}
+  .chart-title{font-size:13px; color:var(--ink-soft); font-weight:600; margin-bottom:14px;}
+  .bars{display:grid; grid-template-columns:repeat(12,1fr); align-items:end; gap:8px; height:90px;}
+  .bar-col{display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; cursor:pointer;}
+  .bar-count{font-family:'Chakra Petch',monospace; font-size:11px; font-weight:700; color:var(--green-deep); margin-bottom:4px;}
+  .bar{width:60%; background:var(--green); border-radius:4px 4px 0 0; transition:opacity .15s ease;}
+  .bar-col:hover .bar{opacity:.75;}
+  .bar-abbr{font-family:'Chakra Petch',monospace; font-size:11px; color:var(--muted); margin-top:6px;}
+
+  .controls{max-width:1180px; margin:22px auto 0; padding:0 24px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between;}
+  .controls-left{display:flex; gap:10px; flex-wrap:wrap; flex:1; min-width:260px;}
+  .search-box{flex:1; min-width:200px;}
+  .search-box input, select{width:100%; padding:11px 14px; border-radius:10px; border:1px solid var(--line); background:var(--surface); font-family:'Sarabun',sans-serif; font-size:14px; color:var(--ink);}
+  .search-box input:focus, select:focus{outline:2px solid var(--green); outline-offset:1px;}
+  select{min-width:170px;}
+  .controls-right{display:flex; gap:10px;}
+  .btn{font-family:'Sarabun',sans-serif; font-weight:600; font-size:14px; border:none; border-radius:10px; padding:11px 18px; cursor:pointer; transition:opacity .15s ease; white-space:nowrap;}
+  .btn:hover{opacity:.88;}
+  .btn:disabled{opacity:.5; cursor:not-allowed;}
+  .btn:focus-visible{outline:2px solid var(--green-deep); outline-offset:2px;}
+  .btn-primary{background:var(--green); color:#fff;}
+  .btn-ochre{background:var(--ochre); color:#fff;}
+  .btn-ghost{background:transparent; color:var(--ink-soft); border:1px solid var(--line);}
+
+  main{max-width:1180px; margin:0 auto; padding:24px 24px 80px;}
+  .month-section{scroll-margin-top:20px; padding:28px 0; border-top:1px solid var(--line);}
+  .month-section:first-child{border-top:none;}
+  .month-head{display:flex; align-items:baseline; gap:14px; margin-bottom:14px;}
+  .month-head h2{font-size:21px; font-weight:600; color:var(--green-deep); margin:0;}
+  .month-head .count-badge{font-family:'Chakra Petch',monospace; font-size:13px; background:var(--ochre-soft); color:#7A5420; padding:3px 10px; border-radius:999px; font-weight:600;}
+
+  table.emp-table{width:100%; border-collapse:collapse; background:var(--surface); border:1px solid var(--line); border-radius:12px; overflow:hidden;}
+  table.emp-table thead th{
+    text-align:left; font-family:'Chakra Petch',monospace; font-size:11px; letter-spacing:.03em;
+    text-transform:uppercase; color:var(--muted); background:var(--green-pale); padding:10px 14px; font-weight:600;
+  }
+  table.emp-table tbody td{padding:10px 14px; font-size:13.5px; border-top:1px solid var(--line); vertical-align:middle;}
+  table.emp-table tbody tr:hover{background:var(--bg);}
+  .name-cell{display:flex; align-items:center; gap:10px;}
+  .avatar-sm{width:28px; height:28px; border-radius:50%; background:var(--green); color:#fff; display:flex; align-items:center; justify-content:center; font-family:'Taviraj',serif; font-weight:600; font-size:12px; flex-shrink:0;}
+  .dept-tag{font-family:'Chakra Petch',monospace; font-size:11px; background:var(--bg); border:1px solid var(--line); color:var(--ink-soft); padding:2px 8px; border-radius:6px;}
+  .date-cell{font-family:'Chakra Petch',monospace; font-size:12.5px; color:var(--ink-soft); white-space:nowrap;}
+  .del-btn{border:none; background:transparent; color:var(--muted); cursor:pointer; font-size:15px; padding:4px 6px; border-radius:6px;}
+  .del-btn:hover{color:var(--danger); background:#F6E9E5;}
+
+  .load-more-row{display:flex; justify-content:center; padding:14px 0 2px;}
+  .empty-note{color:var(--muted); font-size:13px; padding:10px 0;}
+  .loading-note{color:var(--muted); font-size:14px; padding:40px 0; text-align:center;}
+  .error-note{color:var(--danger); font-size:13px; padding:10px 0; background:#FBEDE9; border-radius:8px; padding:10px 14px; margin-bottom:14px;}
+
+  .overlay{position:fixed; inset:0; background:rgba(30,42,37,.4); display:none; align-items:center; justify-content:center; padding:20px; z-index:50;}
+  .overlay.open{display:flex;}
+  .modal{background:var(--surface); border-radius:16px; padding:28px; width:100%; max-width:420px;}
+  .modal h3{margin:0 0 18px; font-size:20px; color:var(--green-deep);}
+  .field{margin-bottom:14px;}
+  .field label{display:block; font-size:12px; font-weight:600; color:var(--ink-soft); margin-bottom:5px; font-family:'Chakra Petch',monospace; letter-spacing:.03em;}
+  .field input{width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--line); font-family:'Sarabun',sans-serif; font-size:14px; color:var(--ink);}
+  .field input:focus{outline:2px solid var(--green); outline-offset:1px;}
+  .modal-actions{display:flex; gap:10px; justify-content:flex-end; margin-top:20px;}
+  .form-error{color:var(--danger); font-size:12.5px; margin:-6px 0 12px;}
+
+  .export-hint{font-size:12px; color:var(--muted); max-width:1180px; margin:8px auto 0; padding:0 24px;}
+
+  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto;} }
+  @media (max-width:760px){
+    .kpi-wrap{grid-template-columns:1fr;}
+    .bars{grid-template-columns:repeat(6,1fr); row-gap:16px; height:auto;}
+    table.emp-table thead{display:none;}
+    table.emp-table, table.emp-table tbody, table.emp-table tr, table.emp-table td{display:block; width:100%;}
+    table.emp-table tr{border-top:1px solid var(--line); padding:8px 0;}
+    table.emp-table td{border-top:none; padding:3px 14px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="eyebrow">ทะเบียนพนักงาน</div>
+  <h1 class="display">พนักงานเริ่มงาน — แยกตามเดือน</h1>
+  <p class="sub">ข้อมูลเชื่อมต่อกับ Google Sheet โดยตรง เพิ่ม/ลบรายชื่อในหน้านี้จะบันทึกลงชีตทันที</p>
+  <div class="sync-pill" id="syncPill"><span class="sync-dot"></span><span id="syncText">กำลังเชื่อมต่อ Google Sheet...</span></div>
+</header>
+
+<div id="errorArea"></div>
+
+<div class="kpi-wrap" id="kpiWrap"></div>
+
+<div class="chart-wrap">
+  <div class="chart">
+    <div class="chart-title">แนวโน้มจำนวนพนักงานเริ่มงานรายเดือน</div>
+    <div class="bars" id="bars"></div>
+  </div>
+</div>
+
+<div class="controls">
+  <div class="controls-left">
+    <div class="search-box">
+      <input id="searchInput" type="text" placeholder="ค้นหาชื่อ ตำแหน่ง หรือแผนก...">
+    </div>
+    <select id="deptFilter"><option value="">ทุกแผนก</option></select>
+  </div>
+  <div class="controls-right">
+    <button class="btn btn-ochre" id="exportBtn">⇩ ส่งออก CSV</button>
+    <button class="btn btn-primary" id="addBtn">+ เพิ่มพนักงาน</button>
+  </div>
+</div>
+<p class="export-hint">ข้อมูลทั้งหมดอ่าน/เขียนจาก Google Sheet ชื่อชีต "Employees" ในสเปรดชีตที่ผูกกับสคริปต์นี้</p>
+
+<main id="main"><div class="loading-note">กำลังโหลดข้อมูลจาก Google Sheet...</div></main>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3>เพิ่มพนักงานใหม่</h3>
+    <form id="addForm">
+      <div class="field"><label for="fName">ชื่อ-สกุล</label><input id="fName" type="text" required placeholder="เช่น สมชาย ใจดี"></div>
+      <div class="field"><label for="fRole">ตำแหน่ง</label><input id="fRole" type="text" required placeholder="เช่น เจ้าหน้าที่ฝ่ายบุคคล"></div>
+      <div class="field"><label for="fDept">แผนก</label><input id="fDept" type="text" required placeholder="เช่น ทรัพยากรบุคคล"></div>
+      <div class="field"><label for="fDate">วันที่เริ่มงาน</label><input id="fDate" type="date" required></div>
+      <div class="form-error" id="formError" style="display:none;"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="cancelBtn">ยกเลิก</button>
+        <button type="submit" class="btn btn-primary" id="saveBtn">บันทึก</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const monthNames = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
+  const monthAbbr  = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+  const PAGE_SIZE = 20;
+
+  let employees = [];      // โหลดจาก Google Sheet ผ่าน google.script.run
+  let shownCounts = Array(12).fill(PAGE_SIZE);
+
+  function formatDate(d){
+    const dt = new Date(d);
+    return dt.toLocaleDateString('th-TH', {day:'numeric', month:'short', year:'numeric'});
+  }
+  function initials(name){ const p = String(name).trim().split(" "); return p[0] ? p[0][0] : "?"; }
+
+  function groupByMonth(list){
+    const groups = Array.from({length:12}, () => []);
+    list.forEach(emp => {
+      const idx = new Date(emp.date).getMonth();
+      if (!isNaN(idx)) groups[idx].push(emp);
+    });
+    groups.forEach(g => g.sort((a,b) => new Date(b.date) - new Date(a.date)));
+    return groups;
+  }
+
+  function populateDeptFilter(){
+    const depts = Array.from(new Set(employees.map(e => e.dept))).sort();
+    const sel = document.getElementById('deptFilter');
+    const current = sel.value;
+    sel.innerHTML = `<option value="">ทุกแผนก</option>` + depts.map(d => `<option value="${d}">${d}</option>`).join("");
+    sel.value = current;
+  }
+
+  function getFiltered(){
+    const query = document.getElementById('searchInput').value.trim().toLowerCase();
+    const dept = document.getElementById('deptFilter').value;
+    return employees.filter(e => {
+      const matchQuery = !query || e.name.toLowerCase().includes(query) || e.role.toLowerCase().includes(query) || e.dept.toLowerCase().includes(query);
+      const matchDept = !dept || e.dept === dept;
+      return matchQuery && matchDept;
+    });
+  }
+
+  function renderKPI(groups, filteredCount){
+    const totals = groups.map(g => g.length);
+    const max = Math.max(...totals, 0);
+    const busiestIdx = totals.indexOf(max);
+    const avg = Math.round(filteredCount / 12);
+    document.getElementById('kpiWrap').innerHTML = `
+      <div class="kpi"><div class="label">พนักงานทั้งหมด (ตามตัวกรอง)</div><div class="value">${filteredCount.toLocaleString('th-TH')}<span class="unit">คน</span></div></div>
+      <div class="kpi"><div class="label">เฉลี่ยต่อเดือน</div><div class="value">${avg.toLocaleString('th-TH')}<span class="unit">คน/เดือน</span></div></div>
+      <div class="kpi"><div class="label">เดือนที่เริ่มงานมากที่สุด</div><div class="value">${filteredCount ? monthNames[busiestIdx] : "-"}<span class="unit">${filteredCount ? `(${max} คน)` : ""}</span></div></div>
+    `;
+  }
+
+  function renderBars(groups){
+    const totals = groups.map(g => g.length);
+    const max = Math.max(1, ...totals);
+    document.getElementById('bars').innerHTML = groups.map((g, i) => {
+      const heightPx = Math.max(4, Math.round((g.length / max) * 64));
+      return `<a href="#month-${i}" style="text-decoration:none;color:inherit;">
+        <div class="bar-col" style="height:64px;">
+          <span class="bar-count">${g.length}</span>
+          <div class="bar" style="height:${heightPx}px;"></div>
+        </div>
+        <div class="bar-abbr" style="text-align:center;">${monthAbbr[i]}</div>
+      </a>`;
+    }).join("");
+  }
+
+  function renderMain(groups){
+    const main = document.getElementById('main');
+    main.innerHTML = groups.map((g, i) => {
+      const shown = Math.min(shownCounts[i], g.length);
+      const rows = g.slice(0, shown);
+      const hasMore = shown < g.length;
+      return `
+      <section class="month-section" id="month-${i}">
+        <div class="month-head">
+          <h2>${monthNames[i]}</h2>
+          <span class="count-badge num">${g.length} คน</span>
+        </div>
+        ${g.length === 0 ? `<div class="empty-note">ยังไม่มีพนักงานที่เริ่มงานในเดือนนี้</div>` : `
+          <table class="emp-table">
+            <thead><tr><th>ชื่อ-สกุล</th><th>ตำแหน่ง</th><th>แผนก</th><th>วันที่เริ่มงาน</th><th></th></tr></thead>
+            <tbody>
+              ${rows.map(emp => `
+                <tr>
+                  <td><div class="name-cell"><div class="avatar-sm">${initials(emp.name)}</div>${emp.name}</div></td>
+                  <td>${emp.role}</td>
+                  <td><span class="dept-tag">${emp.dept}</span></td>
+                  <td class="date-cell">${formatDate(emp.date)}</td>
+                  <td><button class="del-btn" title="ลบ" data-id="${emp.id}">✕</button></td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+          ${hasMore ? `<div class="load-more-row"><button class="btn btn-ghost load-more-btn" data-month="${i}">แสดงเพิ่มเติม (เหลืออีก ${g.length - shown} คน)</button></div>` : ""}
+        `}
+      </section>`;
+    }).join("");
+
+    main.querySelectorAll('.del-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        btn.disabled = true;
+        google.script.run
+          .withSuccessHandler(() => {
+            employees = employees.filter(e => e.id !== id);
+            populateDeptFilter();
+            renderAll();
+          })
+          .withFailureHandler(err => showError('ลบไม่สำเร็จ: ' + err.message))
+          .deleteEmployee(id);
+      });
+    });
+    main.querySelectorAll('.load-more-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        shownCounts[Number(btn.dataset.month)] += PAGE_SIZE;
+        renderAll();
+      });
+    });
+  }
+
+  function renderAll(){
+    const filtered = getFiltered();
+    const groups = groupByMonth(filtered);
+    renderKPI(groups, filtered.length);
+    renderBars(groups);
+    renderMain(groups);
+  }
+
+  function resetPaging(){ shownCounts = Array(12).fill(PAGE_SIZE); renderAll(); }
+
+  function showError(msg){
+    document.getElementById('errorArea').innerHTML =
+      `<div class="error-note" style="max-width:1180px;margin:0 auto;padding:0 24px;">${msg}</div>`;
+  }
+
+  function setSyncStatus(text, ok){
+    document.getElementById('syncText').textContent = text;
+    document.getElementById('syncPill').style.background = ok ? '' : '#FBEDE9';
+  }
+
+  function loadEmployees(){
+    setSyncStatus('กำลังเชื่อมต่อ Google Sheet...', true);
+    google.script.run
+      .withSuccessHandler(data => {
+        employees = data;
+        populateDeptFilter();
+        resetPaging();
+        setSyncStatus('เชื่อมต่อ Google Sheet แล้ว · ' + employees.length.toLocaleString('th-TH') + ' รายชื่อ', true);
+      })
+      .withFailureHandler(err => {
+        document.getElementById('main').innerHTML = '';
+        showError('โหลดข้อมูลจาก Google Sheet ไม่สำเร็จ: ' + err.message);
+        setSyncStatus('เชื่อมต่อไม่สำเร็จ', false);
+      })
+      .getEmployees();
+  }
+
+  document.getElementById('searchInput').addEventListener('input', resetPaging);
+  document.getElementById('deptFilter').addEventListener('change', resetPaging);
+
+  document.getElementById('exportBtn').addEventListener('click', () => {
+    const filtered = getFiltered();
+    const header = ["ชื่อ-สกุล","ตำแหน่ง","แผนก","วันที่เริ่มงาน"];
+    const rows = filtered.map(e => [e.name, e.role, e.dept, e.date]);
+    const csvContent = [header, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(",")).join("\r\n");
+    const blob = new Blob(["\uFEFF" + csvContent], {type: "text/csv;charset=utf-8;"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `employees_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  const overlay = document.getElementById('overlay');
+  const formError = document.getElementById('formError');
+  document.getElementById('addBtn').addEventListener('click', () => { formError.style.display = 'none'; overlay.classList.add('open'); });
+  document.getElementById('cancelBtn').addEventListener('click', () => overlay.classList.remove('open'));
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('open'); });
+
+  document.getElementById('addForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('fName').value.trim();
+    const role = document.getElementById('fRole').value.trim();
+    const dept = document.getElementById('fDept').value.trim();
+    const date = document.getElementById('fDate').value;
+    if (!name || !role || !dept || !date) return;
+
+    const saveBtn = document.getElementById('saveBtn');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'กำลังบันทึก...';
+
+    google.script.run
+      .withSuccessHandler(id => {
+        employees.push({id, name, role, dept, date});
+        populateDeptFilter();
+        e.target.reset();
+        overlay.classList.remove('open');
+        resetPaging();
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'บันทึก';
+      })
+      .withFailureHandler(err => {
+        formError.textContent = err.message;
+        formError.style.display = 'block';
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'บันทึก';
+      })
+      .addEmployee({name, role, dept, date});
+  });
+
+  loadEmployees();
+</script>
+</body>
+</html>
